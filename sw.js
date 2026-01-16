@@ -1,13 +1,11 @@
 
-const CACHE_NAME = 'multistudio-s24-v3';
+const CACHE_NAME = 'multistudio-s24-v4';
 const CORE_ASSETS = [
   './',
   './index.html',
   './index.tsx',
   './App.tsx',
-  './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  './manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
@@ -29,16 +27,22 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      const networked = fetch(e.request)
-        .then(res => {
-          const cacheCopy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(e.request, cacheCopy));
+  // Strategia Cache-First per librerie esterne, Network-First per il codice locale
+  const isExternal = e.request.url.includes('esm.sh') || e.request.url.includes('cdnjs') || e.request.url.includes('tailwindcss');
+  
+  if (isExternal) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        return cached || fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
           return res;
-        })
-        .catch(() => cached);
-      return cached || networked;
-    })
-  );
+        });
+      })
+    );
+  } else {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(e.request))
+    );
+  }
 });
