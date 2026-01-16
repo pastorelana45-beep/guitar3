@@ -31,7 +31,6 @@
     #root { height: 100vh; width: 100vw; background: #000; display: flex; flex-direction: column; }
     .s24-glass { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); }
     
-    /* Loading screen styles */
     #loading-screen {
       position: fixed;
       inset: 0;
@@ -56,6 +55,17 @@
   
   <script>
     window.process = { env: { NODE_ENV: 'production', API_KEY: '' } };
+    
+    // Fail-safe: Rimuovi il caricamento se c'è un errore fatale nel caricamento script
+    window.addEventListener('error', function(e) {
+      console.error("Global Error Caught:", e);
+      const loader = document.getElementById('loading-screen');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 500);
+      }
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
