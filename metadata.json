@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Electric String Pro",
+  "description": "An interactive electric guitar string simulator with high-fidelity sound synthesis and AI-powered tone suggestions.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
